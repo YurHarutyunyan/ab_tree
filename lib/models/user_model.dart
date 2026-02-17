@@ -6,6 +6,8 @@ class UserModel {
   final String lastName;
   final String passwordHash;
   final DateTime createdAt;
+  final String? phone;
+  final Map<String, int>? appCredits;
 
   UserModel({
     this.id,
@@ -15,6 +17,8 @@ class UserModel {
     required this.lastName,
     required this.passwordHash,
     DateTime? createdAt,
+    this.phone,
+    this.appCredits,
   }) : createdAt = createdAt ?? DateTime.now();
 
   // Convert to JSON for MongoDB
@@ -27,6 +31,8 @@ class UserModel {
       'lastName': lastName,
       'passwordHash': passwordHash,
       'createdAt': createdAt.toIso8601String(),
+      if (phone != null) 'phone': phone,
+      if (appCredits != null) 'appCredits': appCredits,
     };
   }
 
@@ -40,6 +46,10 @@ class UserModel {
       lastName: json['lastName'] as String,
       passwordHash: json['passwordHash'] as String,
       createdAt: DateTime.parse(json['createdAt'] as String),
+      phone: json['phone'],
+      appCredits: json['appCredits'] != null 
+          ? Map<String, int>.from(json['appCredits']) 
+          : null,
     );
   }
 
@@ -52,6 +62,8 @@ class UserModel {
     String? lastName,
     String? passwordHash,
     DateTime? createdAt,
+    String? phone,
+    Map<String, int>? appCredits,
   }) {
     return UserModel(
       id: id ?? this.id,
@@ -61,6 +73,8 @@ class UserModel {
       lastName: lastName ?? this.lastName,
       passwordHash: passwordHash ?? this.passwordHash,
       createdAt: createdAt ?? this.createdAt,
+      phone: phone ?? this.phone,
+      appCredits: appCredits ?? this.appCredits,
     );
   }
 }

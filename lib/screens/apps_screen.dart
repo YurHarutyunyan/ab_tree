@@ -3,6 +3,8 @@ import '../models/app_model.dart';
 import '../services/auth_service.dart';
 import '../utils/constants.dart';
 import '../widgets/app_card.dart';
+import 'support_screen.dart';
+import 'my_account_screen.dart';
 
 class AppsScreen extends StatefulWidget {
   const AppsScreen({super.key});
@@ -52,15 +54,15 @@ class _AppsScreenState extends State<AppsScreen> {
         ),
         child: Column(
           children: [
-            // Blue Header
+            // Lighter Blue Header with Orange Text
             Container(
-              decoration: const BoxDecoration(
-                gradient: AppConstants.blueGradient,
+              decoration: BoxDecoration(
+                color: const Color(0xFF6B9BD1), // Lighter blue
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black26,
-                    blurRadius: 20,
-                    offset: Offset(0, 4),
+                    color: Colors.black.withOpacity(0.15),
+                    blurRadius: 15,
+                    offset: const Offset(0, 4),
                   ),
                 ],
               ),
@@ -74,7 +76,7 @@ class _AppsScreenState extends State<AppsScreen> {
                     child: Text(
                       'FREE APPS',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: const Color(0xFFFF8C42), // Slightly orange
                         fontSize: 42,
                         fontWeight: FontWeight.w700,
                         letterSpacing: 4,
@@ -85,107 +87,142 @@ class _AppsScreenState extends State<AppsScreen> {
               ),
             ),
 
-            // Navigation Bar
-            Container(
-              color: Colors.white.withOpacity(0.95),
-              padding: const EdgeInsets.symmetric(
-                horizontal: 20,
-                vertical: 16,
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Welcome, $_username',
-                    style: const TextStyle(
-                      color: AppConstants.textOrange,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 16,
-                    ),
-                  ),
-                  Row(
-                    children: [
-                      TextButton(
-                        onPressed: () {
-                          Navigator.pushNamed(context, '/payment');
-                        },
-                        child: const Text(
-                          'Payment',
-                          style: TextStyle(
-                            color: AppConstants.primaryOrange,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      ElevatedButton(
-                        onPressed: _handleLogout,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppConstants.primaryOrange,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 8,
-                          ),
-                        ),
-                        child: const Text('Logout'),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-
-            // Apps Grid
+            // Apps List
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(20),
                 child: Column(
                   children: [
-                    const Text(
-                      'Discover Our Applications',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 32,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 40),
+                    const SizedBox(height: 20),
                     
-                    // Grid Layout
-                    LayoutBuilder(
-                      builder: (context, constraints) {
-                        // Calculate number of columns based on width
-                        final crossAxisCount = constraints.maxWidth > 900
-                            ? 3
-                            : constraints.maxWidth > 600
-                                ? 2
-                                : 1;
-
-                        return GridView.builder(
+                    // Single Column Layout
+                    Center(
+                      child: Container(
+                        constraints: const BoxConstraints(maxWidth: 600),
+                        child: ListView.builder(
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
-                          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: crossAxisCount,
-                            childAspectRatio: 0.7,
-                            crossAxisSpacing: 30,
-                            mainAxisSpacing: 30,
-                          ),
                           itemCount: _apps.length,
                           itemBuilder: (context, index) {
-                            return AppCard(
-                              app: _apps[index],
-                              onTap: () => _handleAppTap(_apps[index]),
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 20),
+                              child: AppCard(
+                                app: _apps[index],
+                                onTap: () => _handleAppTap(_apps[index]),
+                              ),
                             );
                           },
-                        );
-                      },
+                        ),
+                      ),
                     ),
-                    const SizedBox(height: 40),
+                    const SizedBox(height: 100), // Space for bottom buttons
                   ],
                 ),
               ),
             ),
+
+            // Bottom Action Buttons
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 10,
+                    offset: const Offset(0, -2),
+                  ),
+                ],
+              ),
+              child: SafeArea(
+                top: false,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      // Presents Button - Navigate to main page (already here, just scroll to top)
+                      _buildBottomButton(
+                        icon: Icons.card_giftcard,
+                        label: 'Presents',
+                        onTap: () {
+                          // Scroll to top or refresh - we're already on the main page
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('You are on the main page'),
+                              duration: Duration(seconds: 1),
+                            ),
+                          );
+                        },
+                      ),
+
+                      // My Account Button
+                      _buildBottomButton(
+                        icon: Icons.person,
+                        label: 'My Account',
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const MyAccountScreen(),
+                            ),
+                          );
+                        },
+                      ),
+
+                      // Support Button
+                      _buildBottomButton(
+                        icon: Icons.support_agent,
+                        label: 'Support',
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const SupportScreen(),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBottomButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return Expanded(
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                icon,
+                color: AppConstants.primaryOrange,
+                size: 28,
+              ),
+              const SizedBox(height: 6),
+              Text(
+                label,
+                style: const TextStyle(
+                  color: AppConstants.textOrange,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

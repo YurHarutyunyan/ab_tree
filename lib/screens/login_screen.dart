@@ -40,7 +40,7 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!mounted) return;
 
     if (result['success']) {
-      Navigator.pushReplacementNamed(context, '/payment');
+      Navigator.pushReplacementNamed(context, '/apps');
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

@@ -160,4 +160,58 @@ class MongoDBService {
       return false;
     }
   }
+
+  // Update user profile (email and phone)
+  Future<bool> updateUserProfile(String username, {String? email, String? phone}) async {
+    try {
+      if (_usersCollection != null) {
+        final updates = modify;
+        if (email != null) updates.set('email', email);
+        if (phone != null) updates.set('phone', phone);
+        
+        final result = await _usersCollection!.updateOne(
+          where.eq('username', username),
+          updates,
+        );
+        return result.isSuccess;
+      }
+      return true; // For demo
+    } catch (e) {
+      print('Error updating user profile: $e');
+      return false;
+    }
+  }
+
+  // Update user credits for a specific app
+  Future<bool> updateAppCredits(String username, String appName, int credits) async {
+    try {
+      if (_usersCollection != null) {
+        final result = await _usersCollection!.updateOne(
+          where.eq('username', username),
+          modify.set('appCredits.$appName', credits),
+        );
+        return result.isSuccess;
+      }
+      return true; // For demo
+    } catch (e) {
+      print('Error updating app credits: $e');
+      return false;
+    }
+  }
+
+  // Get user credits for a specific app
+  Future<int> getAppCredits(String username, String appName) async {
+    try {
+      if (_usersCollection != null) {
+        final user = await findUserByUsername(username);
+        if (user != null && user.appCredits != null) {
+          return user.appCredits![appName] ?? 5; // Default 5 if not set
+        }
+      }
+      return 5; // Default
+    } catch (e) {
+      print('Error getting app credits: $e');
+      return 5;
+    }
+  }
 }

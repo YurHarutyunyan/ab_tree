@@ -55,6 +55,9 @@ dependencies:
   
   # Password hashing
   crypto: ^3.0.3
+  
+  # URL launcher for phone calls
+  url_launcher: ^6.2.4
 
 dev_dependencies:
   flutter_test:

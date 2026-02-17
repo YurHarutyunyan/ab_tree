@@ -30,49 +30,27 @@ class AppCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Card(
-        elevation: 10,
-        shadowColor: AppConstants.primaryOrange.withOpacity(0.2),
+        elevation: 8,
+        shadowColor: AppConstants.primaryOrange.withOpacity(0.3),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(16),
         ),
         child: Container(
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
-            border: Border(
-              top: BorderSide(
-                color: AppConstants.primaryOrange,
-                width: 6,
-              ),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: AppConstants.primaryOrange.withOpacity(0.3),
+              width: 2,
             ),
           ),
           child: Padding(
-            padding: const EdgeInsets.all(30),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
+            padding: const EdgeInsets.all(20),
+            child: Row(
               children: [
-                // Badge
+                // Logo/Icon
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: _getBadgeColor(),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    app.badge,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-
-                // Icon
-                Container(
-                  width: 120,
-                  height: 120,
+                  width: 80,
+                  height: 80,
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
                       begin: Alignment.topLeft,
@@ -83,116 +61,59 @@ class AppCard extends StatelessWidget {
                       ],
                     ),
                     shape: BoxShape.circle,
-                  ),
-                  child: Center(
-                    child: Text(
-                      app.icon,
-                      style: const TextStyle(fontSize: 56),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 24),
-
-                // App Name
-                Text(
-                  app.name,
-                  style: const TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.w700,
-                    color: AppConstants.textOrange,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 12),
-
-                // Tagline
-                Text(
-                  app.tagline,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: AppConstants.brownText,
-                    letterSpacing: 1,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 20),
-
-                // Description
-                Text(
-                  app.description,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    color: Color(0xFF666666),
-                    height: 1.6,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 24),
-
-                // Features List
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: app.features.map((feature) {
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
-                      child: Row(
-                        children: [
-                          const Icon(
-                            Icons.check,
-                            color: Color(0xFF4CAF50),
-                            size: 20,
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              feature,
-                              style: const TextStyle(
-                                fontSize: 14,
-                                color: Color(0xFF555555),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }).toList(),
-                ),
-                const SizedBox(height: 24),
-
-                // Launch Button
-                Container(
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    gradient: AppConstants.buttonGradient,
-                    borderRadius: BorderRadius.circular(8),
                     boxShadow: [
                       BoxShadow(
-                        color: AppConstants.primaryOrange.withOpacity(0.4),
-                        blurRadius: 6,
+                        color: AppConstants.primaryOrange.withOpacity(0.2),
+                        blurRadius: 8,
                         offset: const Offset(0, 4),
                       ),
                     ],
                   ),
-                  child: ElevatedButton(
-                    onPressed: onTap,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.transparent,
-                      shadowColor: Colors.transparent,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    child: const Text(
-                      'Launch App',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
+                  child: Center(
+                    child: Text(
+                      app.icon,
+                      style: const TextStyle(fontSize: 40),
                     ),
                   ),
+                ),
+                const SizedBox(width: 20),
+
+                // Text content
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // App Name
+                      Text(
+                        app.name,
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w700,
+                          color: AppConstants.textOrange,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+
+                      // Description
+                      Text(
+                        app.description,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Color(0xFF666666),
+                          height: 1.5,
+                        ),
+                        maxLines: 3,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+                
+                // Arrow icon to indicate clickable
+                const Icon(
+                  Icons.arrow_forward_ios,
+                  color: AppConstants.primaryOrange,
+                  size: 20,
                 ),
               ],
             ),

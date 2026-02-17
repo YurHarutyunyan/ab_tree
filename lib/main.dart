@@ -49,6 +49,7 @@ class MyApp extends StatelessWidget {
             settings.name == '/apps' || 
             settings.name == '/app-detail') {
           return MaterialPageRoute(
+            settings: settings, // Pass settings to preserve arguments
             builder: (context) => FutureBuilder<bool>(
               future: AuthService.instance.isLoggedIn(),
               builder: (context, snapshot) {
