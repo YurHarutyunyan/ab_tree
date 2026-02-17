@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../services/auth_service.dart';
 import '../services/payment_service.dart';
+import '../services/mongodb_service.dart';
 import '../utils/constants.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/custom_text_field.dart';
@@ -26,6 +27,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
   
   final _authService = AuthService.instance;
   final _paymentService = PaymentService.instance;
+  final _mongoService = MongoDBService.instance;
   
   String? _selectedCountry;
   String _username = 'User';
@@ -97,6 +99,13 @@ class _PaymentScreenState extends State<PaymentScreen> {
     if (!mounted) return;
 
     if (result['success']) {
+      // Set all app credits to 5 after successful payment
+      final userInfo = await _authService.getCurrentUser();
+      final username = userInfo['username'] ?? '';
+      if (username.isNotEmpty) {
+        await _mongoService.setCreditsAfterPayment(username);
+      }
+      
       _showSuccessDialog(
         result['transactionId'],
         result['amount'].toStringAsFixed(2),
@@ -154,6 +163,28 @@ class _PaymentScreenState extends State<PaymentScreen> {
               'The funds have been transferred to the recipient\'s account.',
               textAlign: TextAlign.center,
               style: TextStyle(color: Color(0xFF666666)),
+            ),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF1F8E9),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.stars, color: Color(0xFF689F38), size: 20),
+                  SizedBox(width: 8),
+                  Text(
+                    'All app credits set to 5!',
+                    style: TextStyle(
+                      color: Color(0xFF33691E),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
             ),
             const SizedBox(height: 24),
             CustomButton(

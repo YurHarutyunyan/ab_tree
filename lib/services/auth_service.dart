@@ -85,14 +85,24 @@ class AuthService {
         };
       }
 
-      // Create new user
+      // Create new user with initial credits (2 for each app)
       final hashedPassword = _hashPassword(password);
+      final initialCredits = <String, int>{
+        'Art Lunch': 2,
+        'Smart Portal': 2,
+        'Business Hub': 2,
+        'Learn Plus': 2,
+        'Creative Studio': 2,
+        'Finance Tracker': 2,
+      };
+      
       final newUser = UserModel(
         username: username,
         email: email,
         firstName: firstName,
         lastName: lastName,
         passwordHash: hashedPassword,
+        appCredits: initialCredits,
       );
 
       // Save to MongoDB or demo storage

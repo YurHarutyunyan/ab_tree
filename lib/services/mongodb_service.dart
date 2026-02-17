@@ -185,16 +185,48 @@ class MongoDBService {
   // Update user credits for a specific app
   Future<bool> updateAppCredits(String username, String appName, int credits) async {
     try {
+      print('📝 Updating credits for $username - $appName: $credits');
       if (_usersCollection != null) {
         final result = await _usersCollection!.updateOne(
           where.eq('username', username),
           modify.set('appCredits.$appName', credits),
         );
+        print('✅ Update result: ${result.isSuccess ? "SUCCESS" : "FAILED"}');
+        print('   Modified count: ${result.nModified}');
         return result.isSuccess;
       }
+      print('⚠️  No collection available');
       return true; // For demo
     } catch (e) {
-      print('Error updating app credits: $e');
+      print('❌ Error updating app credits: $e');
+      return false;
+    }
+  }
+
+  // Set credits to 5 for all apps after payment
+  Future<bool> setCreditsAfterPayment(String username) async {
+    try {
+      print('💳 Setting credits to 5 for all apps for user: $username');
+      final allAppsCredits = <String, int>{
+        'Art Lunch': 5,
+        'Smart Portal': 5,
+        'Business Hub': 5,
+        'Learn Plus': 5,
+        'Creative Studio': 5,
+        'Finance Tracker': 5,
+      };
+      
+      if (_usersCollection != null) {
+        final result = await _usersCollection!.updateOne(
+          where.eq('username', username),
+          modify.set('appCredits', allAppsCredits),
+        );
+        print('✅ Payment credits update: ${result.isSuccess ? "SUCCESS" : "FAILED"}');
+        return result.isSuccess;
+      }
+      return true;
+    } catch (e) {
+      print('❌ Error setting credits after payment: $e');
       return false;
     }
   }
