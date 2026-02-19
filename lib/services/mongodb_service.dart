@@ -203,32 +203,40 @@ class MongoDBService {
     }
   }
 
-  // Set credits to 5 for all apps after payment
-  Future<bool> setCreditsAfterPayment(String username) async {
+  // Set payment validation status
+  Future<bool> setPaymentValid(String username, bool isValid) async {
     try {
-      print('💳 Setting credits to 5 for all apps for user: $username');
-      final allAppsCredits = <String, int>{
-        'Art Lunch': 5,
-        'Smart Portal': 5,
-        'Business Hub': 5,
-        'Learn Plus': 5,
-        'Creative Studio': 5,
-        'Finance Tracker': 5,
-      };
+      print('💳 Setting payment validation for $username to: $isValid');
       
       if (_usersCollection != null) {
+        final allAppsCredits = <String, int>{
+          'Art Lunch': isValid ? 5 : 2,
+          'Smart Portal': isValid ? 5 : 2,
+          'Business Hub': isValid ? 5 : 2,
+          'Learn Plus': isValid ? 5 : 2,
+          'Creative Studio': isValid ? 5 : 2,
+          'Finance Tracker': isValid ? 5 : 2,
+        };
+        
         final result = await _usersCollection!.updateOne(
           where.eq('username', username),
-          modify.set('appCredits', allAppsCredits),
+          modify
+            .set('isPaymentValid', isValid)
+            .set('appCredits', allAppsCredits),
         );
-        print('✅ Payment credits update: ${result.isSuccess ? "SUCCESS" : "FAILED"}');
+        print('✅ Payment validation update: ${result.isSuccess ? "SUCCESS" : "FAILED"}');
         return result.isSuccess;
       }
       return true;
     } catch (e) {
-      print('❌ Error setting credits after payment: $e');
+      print('❌ Error setting payment validation: $e');
       return false;
     }
+  }
+
+  // Set credits to 5 for all apps after payment
+  Future<bool> setCreditsAfterPayment(String username) async {
+    return await setPaymentValid(username, true);
   }
 
   // Get user credits for a specific app
@@ -236,14 +244,21 @@ class MongoDBService {
     try {
       if (_usersCollection != null) {
         final user = await findUserByUsername(username);
-        if (user != null && user.appCredits != null) {
-          return user.appCredits![appName] ?? 5; // Default 5 if not set
+        if (user != null) {
+          // Check if payment is valid
+          if (user.isPaymentValid) {
+            // Payment confirmed: return 5 credits for this app
+            return user.appCredits?[appName] ?? 5;
+          } else {
+            // No payment: return 2 credits for this app
+            return user.appCredits?[appName] ?? 2;
+          }
         }
       }
-      return 5; // Default
+      return 2; // Default for no payment
     } catch (e) {
       print('Error getting app credits: $e');
-      return 5;
+      return 2;
     }
   }
 }

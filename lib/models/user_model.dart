@@ -8,6 +8,7 @@ class UserModel {
   final DateTime createdAt;
   final String? phone;
   final Map<String, int>? appCredits;
+  final bool isPaymentValid;
 
   UserModel({
     this.id,
@@ -19,6 +20,7 @@ class UserModel {
     DateTime? createdAt,
     this.phone,
     this.appCredits,
+    this.isPaymentValid = false,
   }) : createdAt = createdAt ?? DateTime.now();
 
   // Convert to JSON for MongoDB
@@ -33,6 +35,7 @@ class UserModel {
       'createdAt': createdAt.toIso8601String(),
       if (phone != null) 'phone': phone,
       if (appCredits != null) 'appCredits': appCredits,
+      'isPaymentValid': isPaymentValid,
     };
   }
 
@@ -50,6 +53,7 @@ class UserModel {
       appCredits: json['appCredits'] != null 
           ? Map<String, int>.from(json['appCredits']) 
           : null,
+      isPaymentValid: json['isPaymentValid'] ?? false,
     );
   }
 
@@ -64,6 +68,7 @@ class UserModel {
     DateTime? createdAt,
     String? phone,
     Map<String, int>? appCredits,
+    bool? isPaymentValid,
   }) {
     return UserModel(
       id: id ?? this.id,
@@ -75,6 +80,7 @@ class UserModel {
       createdAt: createdAt ?? this.createdAt,
       phone: phone ?? this.phone,
       appCredits: appCredits ?? this.appCredits,
+      isPaymentValid: isPaymentValid ?? this.isPaymentValid,
     );
   }
 }
