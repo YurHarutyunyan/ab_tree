@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/app_model.dart';
 import '../utils/constants.dart';
 import '../services/auth_service.dart';
-import '../services/mongodb_service.dart';
+import '../services/api_data_service.dart';
 
 class AppDetailScreen extends StatefulWidget {
   const AppDetailScreen({super.key});
@@ -13,8 +13,8 @@ class AppDetailScreen extends StatefulWidget {
 
 class _AppDetailScreenState extends State<AppDetailScreen> {
   final _authService = AuthService.instance;
-  final _mongoService = MongoDBService.instance;
-  int _creditsCount = 5;
+  final _dataService = ApiDataService.instance;
+  int _creditsCount = 2;
   bool _isLoading = true;
   String _username = '';
 
@@ -32,34 +32,53 @@ class _AppDetailScreenState extends State<AppDetailScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final app = ModalRoute.of(context)?.settings.arguments as AppModel?;
       if (app != null) {
-        final credits = await _mongoService.getAppCredits(_username, app.name);
-        setState(() {
-          _creditsCount = credits;
-          _isLoading = false;
-        });
+        final response = await _dataService.getAppCredits(app.name);
+        if (response['success'] == true) {
+          setState(() {
+            _creditsCount = response['credits'] ?? 2;
+            _isLoading = false;
+          });
+        } else {
+          setState(() {
+            _creditsCount = 2;
+            _isLoading = false;
+          });
+        }
       }
     });
   }
 
   Future<void> _handleBuyButton(String appName) async {
     if (_creditsCount > 0) {
-      final newCredits = _creditsCount - 1;
+      // Call API to use credit
+      final response = await _dataService.buyWithCredit(appName);
       
-      // Save to database
-      await _mongoService.updateAppCredits(_username, appName, newCredits);
-      
-      setState(() {
-        _creditsCount = newCredits;
-      });
-      
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Purchase successful! Credits remaining: $_creditsCount'),
-            backgroundColor: Colors.green,
-            duration: const Duration(seconds: 2),
-          ),
-        );
+      if (response['success'] == true) {
+        final newCredits = response['credits'] ?? (_creditsCount - 1);
+        
+        setState(() {
+          _creditsCount = newCredits;
+        });
+        
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Purchase successful! Credits remaining: $_creditsCount'),
+              backgroundColor: Colors.green,
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(response['message'] ?? 'Purchase failed'),
+              backgroundColor: Colors.red,
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        }
       }
     } else {
       // Show alert when no credits left

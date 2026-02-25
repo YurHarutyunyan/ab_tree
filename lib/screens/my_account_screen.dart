@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
-import '../services/mongodb_service.dart';
+import '../services/api_data_service.dart';
 import '../utils/constants.dart';
 import '../widgets/custom_text_field.dart';
 import '../widgets/custom_button.dart';
@@ -14,7 +14,7 @@ class MyAccountScreen extends StatefulWidget {
 
 class _MyAccountScreenState extends State<MyAccountScreen> {
   final _authService = AuthService.instance;
-  final _mongoService = MongoDBService.instance;
+  final _dataService = ApiDataService.instance;
   final _formKey = GlobalKey<FormState>();
   final _phoneController = TextEditingController();
   final _emailController = TextEditingController();
@@ -41,15 +41,25 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
   Future<void> _loadUserInfo() async {
     final userInfo = await _authService.getCurrentUser();
     
-    // Load from MongoDB to get phone number and email
-    final user = await _mongoService.findUserByUsername(userInfo['username'] ?? '');
+    // Load from API to get complete user profile
+    final response = await _dataService.getUserProfile();
     
     setState(() {
       _username = userInfo['username'] ?? '';
-      _firstName = userInfo['firstName'] ?? '';
-      _lastName = userInfo['lastName'] ?? '';
-      _emailController.text = user?.email ?? '';
-      _phoneController.text = user?.phone ?? '';
+      
+      if (response['success'] == true && response['user'] != null) {
+        final user = response['user'] as Map<String, dynamic>;
+        _firstName = user['firstName'] ?? '';
+        _lastName = user['lastName'] ?? '';
+        _emailController.text = user['email'] ?? '';
+        _phoneController.text = user['phone'] ?? '';
+      } else {
+        // Fallback to local data if API fails
+        _firstName = '';
+        _lastName = '';
+        _emailController.text = userInfo['email'] ?? '';
+        _phoneController.text = '';
+      }
     });
   }
 
@@ -64,9 +74,8 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
 
     setState(() => _isLoading = true);
 
-    // Actually save to MongoDB
-    final success = await _mongoService.updateUserProfile(
-      _username,
+    // Call API to update profile
+    final response = await _dataService.updateUserProfile(
       email: _emailController.text.trim(),
       phone: _phoneController.text.trim(),
     );
@@ -79,10 +88,10 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(success 
+          content: Text(response['success'] == true
               ? 'Profile updated successfully' 
-              : 'Failed to update profile'),
-          backgroundColor: success ? Colors.green : Colors.red,
+              : response['message'] ?? 'Failed to update profile'),
+          backgroundColor: response['success'] == true ? Colors.green : Colors.red,
           duration: const Duration(seconds: 2),
         ),
       );

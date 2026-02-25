@@ -1,72 +1,130 @@
 # AB Tree Flutter Application
 
-A complete Flutter mobile application with Login, Registration, Payment System, and Apps listing functionality. Built with MongoDB Atlas for backend storage and Stripe for payment processing.
+A complete Flutter mobile application with secure client-server architecture, featuring user authentication, app credits system, and Stripe payment integration. Ready for App Store deployment.
 
 ## Features
 
-✅ User Registration & Authentication
-✅ Secure Login System
+✅ User Registration & Authentication with JWT
+✅ Secure REST API Backend
+✅ App Credits System (2 credits per app, 5 after payment)
 ✅ Payment Processing with Stripe
-✅ Apps Listing with Card Grid
-✅ App Detail Pages
-✅ MongoDB Integration
+✅ User Profile Management
+✅ Apps Listing with Detail Pages
 ✅ Session Management
 ✅ Form Validation
 ✅ Beautiful Orange Gradient Theme
+✅ Production-Ready Architecture
 
-## Screenshots
+## Architecture
 
-- Login Screen with authentication
-- Registration form with validation
-- Payment screen with card input
-- Apps grid with 6 applications
-- Detailed app pages with reviews
+```
+┌─────────────────┐
+│  Flutter Client │  ←  Mobile app (iOS/Android)
+│  (UI Layer)     │     Communicates via HTTPS
+└────────┬────────┘
+         │
+         ↓ REST API
+┌─────────────────┐
+│  Node.js/Express│  ←  Backend API
+│  Backend Server │     JWT Authentication
+└────────┬────────┘
+         │
+         ↓
+┌─────────────────┐
+│    MongoDB      │  ←  Database (in Docker)
+│  (in Docker)    │
+└─────────────────┘
+```
 
 ## Tech Stack
 
-- **Frontend**: Flutter (Dart)
-- **Database**: MongoDB Atlas with mongo_dart
-- **Payment**: Stripe Flutter SDK
-- **State Management**: Provider
-- **Local Storage**: SharedPreferences
+**Frontend (Client):**
+- Flutter (Dart)
+- HTTP package for API calls
+- Stripe Flutter SDK (client-side)
+- SharedPreferences for local storage
+- Provider for state management
+
+**Backend (Server):**
+- Node.js with Express
+- MongoDB with Mongoose
+- JWT for authentication
+- Stripe API (server-side)
+- Docker & Docker Compose
+
+**Security:**
+- JWT token-based authentication
+- Bcrypt password hashing
+- HTTPS/SSL in production
+- Server-side payment processing
+- No database credentials in client
 
 ## Project Structure
 
 ```
-lib/
-├── main.dart                 # App entry point with routing
-├── models/                   # Data models
-│   ├── user_model.dart      # User data structure
-│   ├── app_model.dart       # App data structure
-│   └── payment_model.dart   # Payment data structure
-├── services/                 # Business logic
-│   ├── mongodb_service.dart # Database operations
-│   ├── auth_service.dart    # Authentication logic
-│   └── payment_service.dart # Payment processing
-├── screens/                  # UI screens
-│   ├── login_screen.dart    # Login page
-│   ├── register_screen.dart # Registration page
-│   ├── payment_screen.dart  # Payment form
-│   ├── apps_screen.dart     # Apps listing
-│   └── app_detail_screen.dart # App details
-├── widgets/                  # Reusable components
-│   ├── custom_button.dart   # Gradient buttons
-│   ├── custom_text_field.dart # Styled input fields
-│   └── app_card.dart        # App card component
-└── utils/                    # Utilities
-    ├── constants.dart        # App constants & config
-    └── theme.dart           # App theme configuration
+ab_tree_flutter/
+├── lib/                          # Flutter app
+│   ├── main.dart                 # App entry point
+│   ├── config/
+│   │   └── environment.dart      # Environment configuration
+│   ├── models/                   # Data models
+│   │   ├── user_model.dart
+│   │   ├── app_model.dart
+│   │   └── payment_model.dart
+│   ├── services/                 # API & business logic
+│   │   ├── api_client.dart       # HTTP client with JWT
+│   │   ├── auth_service.dart     # Authentication
+│   │   └── api_data_service.dart # Data operations
+│   ├── screens/                  # UI screens
+│   │   ├── login_screen.dart
+│   │   ├── register_screen.dart
+│   │   ├── apps_screen.dart
+│   │   ├── app_detail_screen.dart
+│   │   ├── my_account_screen.dart
+│   │   ├── support_screen.dart
+│   │   └── payment_screen.dart
+│   ├── widgets/                  # Reusable components
+│   │   ├── custom_button.dart
+│   │   ├── custom_text_field.dart
+│   │   └── app_card.dart
+│   └── utils/                    # Utilities
+│       └── constants.dart        # App constants
+│
+├── backend/                      # Node.js backend
+│   ├── config/
+│   │   └── database.js          # MongoDB connection
+│   ├── models/
+│   │   ├── User.js              # User schema
+│   │   └── Payment.js           # Payment schema
+│   ├── routes/
+│   │   ├── auth.js              # Auth endpoints
+│   │   ├── user.js              # User endpoints
+│   │   └── payment.js           # Payment endpoints
+│   ├── middleware/
+│   │   └── auth.js              # JWT middleware
+│   ├── server.js                # Express server
+│   ├── package.json
+│   ├── Dockerfile
+│   ├── docker-compose.yml
+│   └── .env                     # Environment vars
+│
+├── start_app.sh                 # Start all services
+├── stop_app.sh                  # Stop all services
+├── view_db.sh                   # View database
+├── DEPLOYMENT.md                # Production deployment guide
+└── README.md                    # This file
 ```
 
 ## Prerequisites
 
 - Flutter SDK (3.10.0 or higher)
 - Dart SDK (3.10.8 or higher)
+- Docker and Docker Compose
+- Node.js 18+ and npm (for backend)
 - Android Studio or VS Code with Flutter extensions
-- MongoDB Atlas account (optional - works with in-memory storage)
-- Stripe account (optional - works in demo mode)
+- Stripe account (for payment processing)
 
-## Installation
+## Quick Start (Development)
 
 ### 1. Clone and Navigate
 
@@ -74,85 +132,156 @@ lib/
 cd ab_tree_flutter
 ```
 
-### 2. Install Dependencies
+### 2. Install Flutter Dependencies
 
 ```bash
 flutter pub get
 ```
 
-### 3. Configure MongoDB (Optional)
+### 3. Configure Stripe Keys
 
-If you want to use real MongoDB storage:
+Get your Stripe test API keys from [Stripe Dashboard](https://dashboard.stripe.com/test/apikeys).
 
-1. Create a free account at [MongoDB Atlas](https://cloud.mongodb.com)
-2. Create a new cluster (free tier M0)
-3. Get your connection string
-4. Open `lib/utils/constants.dart`
-5. Replace `YOUR_MONGODB_CONNECTION_STRING` with your actual connection string
+**Backend Configuration:**
 
-Example:
-```dart
-static const String mongoDbConnectionString = 
-  'mongodb+srv://username:password@cluster.mongodb.net/ab_tree_db?retryWrites=true&w=majority';
+Edit `backend/.env`:
+```env
+STRIPE_SECRET_KEY=sk_test_YOUR_ACTUAL_STRIPE_SECRET_KEY
+STRIPE_PUBLISHABLE_KEY=pk_test_YOUR_ACTUAL_STRIPE_PUBLISHABLE_KEY
 ```
 
-**Note**: If you skip this step, the app will use in-memory storage (data won't persist after app restart).
+**Flutter Configuration:**
 
-### 4. Configure Stripe (Optional)
-
-If you want real payment processing:
-
-1. Create an account at [Stripe](https://stripe.com)
-2. Get your test API keys from the Dashboard
-3. Open `lib/utils/constants.dart`
-4. Replace the placeholder keys:
-
+Edit `lib/utils/constants.dart`:
 ```dart
-static const String stripePublishableKey = 'pk_test_your_key_here';
-static const String stripeSecretKey = 'sk_test_your_key_here';
+static const String stripePublishableKey = 'pk_test_YOUR_ACTUAL_STRIPE_PUBLISHABLE_KEY';
 ```
 
-**Note**: If you skip this step, the app will simulate payments (still works for testing).
+### 4. Start All Services
 
-### 5. Update Recipient Card (Optional)
-
-In `lib/utils/constants.dart`, update the recipient card details:
-
-```dart
-static const String recipientCardNumber = '**** **** **** YOUR_LAST_4_DIGITS';
-static const String recipientName = 'Your Business Name';
-```
-
-## Running the App
-
-### Check Connected Devices
+The easiest way to get started:
 
 ```bash
-flutter devices
+./start_app.sh
 ```
 
-### Run on Connected Device
+This will:
+- Start MongoDB in Docker
+- Start the backend API server in Docker
+- Launch the Flutter app in development mode
+
+**Services will be running at:**
+- MongoDB: `mongodb://localhost:27017/ab_tree_db`
+- Backend API: `http://localhost:3000`
+- Backend Health Check: `http://localhost:3000/health`
+
+### 5. Stop Services
 
 ```bash
-flutter run
+./stop_app.sh
 ```
 
-### Run on Specific Device
+## Manual Backend Testing
+
+You can test the backend API independently:
 
 ```bash
-flutter run -d <device_id>
+# Check health
+curl http://localhost:3000/health
+
+# Register a user
+curl -X POST http://localhost:3000/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "testuser",
+    "email": "test@example.com",
+    "firstName": "Test",
+    "lastName": "User",
+    "password": "password123"
+  }'
+
+# Login
+curl -X POST http://localhost:3000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "testuser",
+    "password": "password123"
+  }'
+
+# Use the token from login response for protected endpoints
+curl http://localhost:3000/api/user/profile \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
 ```
 
-### Build for Release
+## Running the Flutter App
+
+### Development Mode (uses localhost:3000)
+
+```bash
+flutter run --dart-define=DEVELOPMENT=true
+```
+
+### Build for Production (uses your production API)
 
 **Android:**
 ```bash
-flutter build apk
+flutter build apk --release --dart-define=DEVELOPMENT=false
+flutter build appbundle --release --dart-define=DEVELOPMENT=false
 ```
 
 **iOS:**
 ```bash
-flutter build ios
+flutter build ios --release --dart-define=DEVELOPMENT=false
+```
+
+## Testing Flow
+
+1. **Register a new user**
+   - Open the app
+   - Navigate to Register screen
+   - Fill in all fields
+   - Submit registration
+
+2. **Login**
+   - Use your credentials
+   - Should redirect to Apps screen
+
+3. **View App Details**
+   - Tap any app card
+   - Should see 2 credits initially
+
+4. **Use Credits**
+   - Tap BUY button
+   - Credits should decrement
+   - Persist after logout/login
+
+5. **Make Payment**
+   - Navigate to payment screen
+   - Use Stripe test card: `4242 4242 4242 4242`
+   - Expiry: Any future date
+   - CVC: Any 3 digits
+   - After payment, all app credits should be 5
+
+6. **Update Profile**
+   - Go to My Account
+   - Update email/phone
+   - Changes should persist
+
+## Database Management
+
+View database contents:
+```bash
+./view_db.sh
+```
+
+Access MongoDB shell:
+```bash
+docker exec -it ab_tree_mongodb mongosh ab_tree_db
+```
+
+Clear all data:
+```bash
+docker exec ab_tree_mongodb mongosh ab_tree_db --eval "db.users.deleteMany({}); db.payments.deleteMany({})"
 ```
 
 ## Usage Guide

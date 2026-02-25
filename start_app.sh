@@ -9,40 +9,8 @@ if ! docker info > /dev/null 2>&1; then
     exit 1
 fi
 
-# Check if MongoDB container exists
-if docker ps -a --format '{{.Names}}' | grep -q "^mongodb$"; then
-    echo "📦 MongoDB container found"
-    
-    # Check if it's running
-    if docker ps --format '{{.Names}}' | grep -q "^mongodb$"; then
-        echo "✅ MongoDB is already running"
-    else
-        echo "▶️  Starting MongoDB container..."
-        docker start mongodb
-        sleep 2
-    fi
-else
-    echo "📦 Creating new MongoDB container..."
-    docker run -d \
-      --name mongodb \
-      -p 27017:27017 \
-      -e MONGO_INITDB_DATABASE=ab_tree_db \
-      mongo:latest
-    
-    echo "⏳ Waiting for MongoDB to initialize..."
-    sleep 3
-fi
-
-# Verify MongoDB is accessible
-echo "🔍 Checking MongoDB connection..."
-if docker exec mongodb mongosh --eval "db.version()" > /dev/null 2>&1; then
-    echo "✅ MongoDB is ready!"
-else
-    echo "⚠️  MongoDB might still be starting up, but continuing..."
-fi
-
+echo "🐳 Starting backend services with Docker Compose..."
 echo ""
-echo "💳 Starting Payment Backend Server..."
 
 # Check if backend dependencies are installed
 if [ ! -d "backend/node_modules" ]; then
@@ -57,20 +25,27 @@ if [ ! -f "backend/.env" ]; then
     cp backend/.env.example backend/.env
 fi
 
-# Start backend server in background
+# Start Docker Compose services
 cd backend
-node server.js > ../backend.log 2>&1 &
-BACKEND_PID=$!
+docker-compose up -d
 cd ..
 
-echo "⏳ Waiting for backend to start..."
-sleep 3
+echo "⏳ Waiting for services to start..."
+sleep 5
+
+# Check if MongoDB is running
+if docker ps --format '{{.Names}}' | grep -q "ab_tree_mongodb"; then
+    echo "✅ MongoDB is ready!"
+else
+    echo "⚠️  MongoDB might still be starting up..."
+fi
 
 # Check if backend is running
 if curl -s http://localhost:3000/health > /dev/null 2>&1; then
-    echo "✅ Payment backend is ready!"
+    echo "✅ Backend API is ready!"
 else
-    echo "⚠️  Backend might still be starting up, but continuing..."
+    echo "⚠️  Backend might still be starting up..."
+    echo "   Check logs with: cd backend && docker-compose logs"
 fi
 
 echo ""
@@ -81,22 +56,15 @@ echo "Services Running:"
 echo "  - MongoDB: http://localhost:27017"
 echo "  - Backend API: http://localhost:3000"
 echo "  - Backend Health: http://localhost:3000/health"
+echo "  - API Docs: http://localhost:3000/"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
 
-# Run Flutter
-flutter run
-
-# Cleanup on exit
-echo ""
-echo "👋 Stopping services..."
-if [ ! -z "$BACKEND_PID" ]; then
-    kill $BACKEND_PID 2>/dev/null
-    echo "✅ Backend server stopped"
-fi
+# Run Flutter in development mode
+flutter run --dart-define=DEVELOPMENT=true
 
 echo ""
-echo "ℹ️  MongoDB container is still running."
-echo "   To stop MongoDB: docker stop mongodb"
-echo "   To view MongoDB data: docker exec -it mongodb mongosh ab_tree_db"
-echo "   To view backend logs: cat backend.log"
+echo "ℹ️  Backend services are still running."
+echo "   To stop all services: ./stop_app.sh"
+echo "   To view backend logs: cd backend && docker-compose logs -f"
+echo "   To view database: ./view_db.sh"

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../services/auth_service.dart';
 import '../services/payment_service.dart';
-import '../services/mongodb_service.dart';
+import '../services/api_data_service.dart';
 import '../utils/constants.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/custom_text_field.dart';
@@ -27,7 +27,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
   
   final _authService = AuthService.instance;
   final _paymentService = PaymentService.instance;
-  final _mongoService = MongoDBService.instance;
+  final _dataService = ApiDataService.instance;
   
   String? _selectedCountry;
   String _username = 'User';
@@ -99,12 +99,9 @@ class _PaymentScreenState extends State<PaymentScreen> {
     if (!mounted) return;
 
     if (result['success']) {
-      // Set all app credits to 5 after successful payment
-      final userInfo = await _authService.getCurrentUser();
-      final username = userInfo['username'] ?? '';
-      if (username.isNotEmpty) {
-        await _mongoService.setCreditsAfterPayment(username);
-      }
+      // Note: In production with real Stripe payments, the backend API
+      // automatically updates credits when payment is confirmed.
+      // For simulated payments, we'll skip the credit update.
       
       _showSuccessDialog(
         result['transactionId'],

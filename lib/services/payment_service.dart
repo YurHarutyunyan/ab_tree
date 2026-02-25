@@ -2,11 +2,11 @@ import 'package:flutter_stripe/flutter_stripe.dart';
 import 'dart:math';
 import '../models/payment_model.dart';
 import '../utils/constants.dart';
-import 'mongodb_service.dart';
+import 'api_data_service.dart';
 
 class PaymentService {
   static PaymentService? _instance;
-  final MongoDBService _mongoService = MongoDBService.instance;
+  final ApiDataService _dataService = ApiDataService.instance;
   bool _isStripeInitialized = false;
 
   PaymentService._();
@@ -137,31 +137,18 @@ class PaymentService {
             cardNumber.replaceAll(RegExp(r'\s+'), '').length - 4,
           );
 
-      // Create payment record
-      final payment = PaymentModel(
-        userId: userId,
-        amount: amount,
-        cardLast4: cardLast4,
-        cardHolder: cardHolder,
-        transactionId: transactionId,
-        status: 'completed',
-        recipientCard: AppConstants.recipientCardNumber,
-      );
-
-      // Save to database
-      final paymentId = await _mongoService.createPayment(payment);
-
-      print('✅ Payment processed successfully');
+      // Note: In production, payment records are saved by the backend API
+      // This is just a simulated payment for demo purposes
+      
+      print('✅ Simulated payment processed successfully');
       print('   Transaction ID: $transactionId');
       print('   Amount: \$$amount');
       print('   From card: ****$cardLast4');
-      print('   To: ${AppConstants.recipientCardNumber}');
 
       return {
         'success': true,
         'message': 'Payment processed successfully',
         'transactionId': transactionId,
-        'paymentId': paymentId,
         'amount': amount,
       };
     } catch (e) {

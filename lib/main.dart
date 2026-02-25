@@ -5,7 +5,6 @@ import 'screens/payment_screen.dart';
 import 'screens/apps_screen.dart';
 import 'screens/app_detail_screen.dart';
 import 'services/auth_service.dart';
-import 'services/mongodb_service.dart';
 import 'services/payment_service.dart';
 import 'utils/theme.dart';
 
@@ -20,9 +19,6 @@ void main() async {
 
 Future<void> _initializeServices() async {
   try {
-    // Initialize MongoDB
-    await MongoDBService.instance.connect();
-    
     // Initialize Stripe
     await PaymentService.instance.initializeStripe();
     

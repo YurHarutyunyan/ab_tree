@@ -35,9 +35,6 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
   
-  # MongoDB integration
-  mongo_dart: ^0.9.3
-  
   # Stripe payment integration
   flutter_stripe: ^10.1.1
   

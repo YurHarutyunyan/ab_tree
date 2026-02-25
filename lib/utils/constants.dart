@@ -1,19 +1,13 @@
 import 'package:flutter/material.dart';
+import '../config/environment.dart';
 
 class AppConstants {
-  // MongoDB Configuration
-  // Docker MongoDB connection
-  static const String mongoDbAppId = 'YOUR_MONGODB_APP_ID';
-  static const String mongoDbConnectionString = 'mongodb://localhost:27017/ab_tree_db';
-  static const String databaseName = 'ab_tree_db';
-  static const String usersCollection = 'users';
-  static const String paymentsCollection = 'payments';
+  // API Configuration
+  static String get apiBaseUrl => Environment.apiBaseUrl;
 
-  // Stripe Configuration
+  // Stripe Configuration (Publishable key only - secret key is on backend)
   // TODO: Replace with your Stripe publishable key (test mode)
   static const String stripePublishableKey = 'YOUR_STRIPE_PUBLISHABLE_KEY';
-  // TODO: Replace with your Stripe secret key (keep this secure!)
-  static const String stripeSecretKey = 'YOUR_STRIPE_SECRET_KEY';
 
   // Payment Configuration
   static const String recipientCardNumber = '**** **** **** 5678';

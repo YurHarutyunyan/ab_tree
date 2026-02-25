@@ -3,14 +3,11 @@ import 'package:crypto/crypto.dart';
 import 'dart:convert';
 import '../models/user_model.dart';
 import '../utils/constants.dart';
-import 'mongodb_service.dart';
+import 'api_client.dart';
 
 class AuthService {
   static AuthService? _instance;
-  final MongoDBService _mongoService = MongoDBService.instance;
-
-  // In-memory storage for demo (when MongoDB is not configured)
-  final Map<String, UserModel> _demoUsers = {};
+  final ApiClient _apiClient = ApiClient.instance;
 
   AuthService._();
 
@@ -19,7 +16,7 @@ class AuthService {
     return _instance!;
   }
 
-  // Hash password
+  // Hash password (for compatibility - backend handles actual hashing)
   String _hashPassword(String password) {
     final bytes = utf8.encode(password);
     final digest = sha256.convert(bytes);
@@ -59,75 +56,38 @@ class AuthService {
         };
       }
 
-      // Check if user already exists
-      final existingUser = await _mongoService.findUserByUsername(username);
-      if (existingUser != null) {
-        return {
-          'success': false,
-          'message': 'Username already exists',
-        };
-      }
-
-      // Check if email already exists
-      final existingEmail = await _mongoService.findUserByEmail(email);
-      if (existingEmail != null) {
-        return {
-          'success': false,
-          'message': 'Email already registered',
-        };
-      }
-
-      // Check demo storage
-      if (_demoUsers.containsKey(username)) {
-        return {
-          'success': false,
-          'message': 'Username already exists',
-        };
-      }
-
-      // Create new user with initial credits (2 for each app)
-      final hashedPassword = _hashPassword(password);
-      final initialCredits = <String, int>{
-        'Art Lunch': 2,
-        'Smart Portal': 2,
-        'Business Hub': 2,
-        'Learn Plus': 2,
-        'Creative Studio': 2,
-        'Finance Tracker': 2,
-      };
-      
-      final newUser = UserModel(
-        username: username,
-        email: email,
-        firstName: firstName,
-        lastName: lastName,
-        passwordHash: hashedPassword,
-        appCredits: initialCredits,
+      // Call API to register
+      final response = await _apiClient.post(
+        '/api/auth/register',
+        body: {
+          'username': username,
+          'email': email,
+          'firstName': firstName,
+          'lastName': lastName,
+          'password': password,
+        },
+        requiresAuth: false,
       );
 
-      // Save to MongoDB or demo storage
-      final userId = await _mongoService.createUser(newUser);
-      if (userId != null) {
-        final userWithId = newUser.copyWith(id: userId);
-        _demoUsers[username] = userWithId;
-        
-        return {
-          'success': true,
-          'message': 'Registration successful',
-          'user': userWithId,
-        };
-      } else {
-        // Save to demo storage
-        final demoId = DateTime.now().millisecondsSinceEpoch.toString();
-        final userWithId = newUser.copyWith(id: demoId);
-        _demoUsers[username] = userWithId;
-        
-        return {
-          'success': true,
-          'message': 'Registration successful',
-          'user': userWithId,
-        };
+      if (response['success'] == true) {
+        // Store JWT token
+        final token = response['token'];
+        if (token != null) {
+          await _apiClient.setToken(token);
+        }
+
+        // Store user info in SharedPreferences
+        final prefs = await SharedPreferences.getInstance();
+        final userData = response['user'] as Map<String, dynamic>;
+        await prefs.setBool('isLoggedIn', true);
+        await prefs.setString('userId', userData['id']);
+        await prefs.setString('username', userData['username']);
+        await prefs.setString('userEmail', userData['email']);
+
+        return response;
       }
+
+      return response;
     } catch (e) {
       return {
         'success': false,
@@ -150,47 +110,41 @@ class AuthService {
         };
       }
 
-      final hashedPassword = _hashPassword(password);
+      // Call API to login
+      final response = await _apiClient.post(
+        '/api/auth/login',
+        body: {
+          'username': username,
+          'password': password,
+        },
+        requiresAuth: false,
+      );
 
-      // Try to find user in MongoDB
-      UserModel? user = await _mongoService.findUserByUsername(username);
-      
-      // If not found in MongoDB, check demo storage
-      if (user == null && _demoUsers.containsKey(username)) {
-        user = _demoUsers[username];
+      if (response['success'] == true) {
+        // Store JWT token
+        final token = response['token'];
+        if (token != null) {
+          await _apiClient.setToken(token);
+        }
+
+        // Store user info in SharedPreferences
+        final prefs = await SharedPreferences.getInstance();
+        final userData = response['user'] as Map<String, dynamic>;
+        await prefs.setBool(AppConstants.keyIsLoggedIn, true);
+        await prefs.setString(AppConstants.keyUserId, userData['id']);
+        await prefs.setString(AppConstants.keyUsername, userData['username']);
+        await prefs.setString(AppConstants.keyUserEmail, userData['email']);
+
+        return response;
       }
 
-      // Verify password
-      if (user != null && user.passwordHash == hashedPassword) {
-        // Save session
-        await _saveSession(user);
-        
-        return {
-          'success': true,
-          'message': 'Login successful',
-          'user': user,
-        };
-      }
-
-      return {
-        'success': false,
-        'message': 'Invalid username or password',
-      };
+      return response;
     } catch (e) {
       return {
         'success': false,
         'message': 'Login failed: $e',
       };
     }
-  }
-
-  // Save session to SharedPreferences
-  Future<void> _saveSession(UserModel user) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(AppConstants.keyIsLoggedIn, true);
-    await prefs.setString(AppConstants.keyUserId, user.id ?? '');
-    await prefs.setString(AppConstants.keyUsername, user.username);
-    await prefs.setString(AppConstants.keyUserEmail, user.email);
   }
 
   // Check if user is logged in
@@ -211,6 +165,7 @@ class AuthService {
 
   // Logout
   Future<void> logout() async {
+    await _apiClient.clearToken();
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();
   }
