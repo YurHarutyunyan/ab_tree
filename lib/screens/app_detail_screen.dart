@@ -14,7 +14,7 @@ class AppDetailScreen extends StatefulWidget {
 class _AppDetailScreenState extends State<AppDetailScreen> {
   final _authService = AuthService.instance;
   final _mongoService = MongoDBService.instance;
-  int _creditsCount = 5;
+  int _creditsCount = 0;
   bool _isLoading = true;
   String _username = '';
 
@@ -37,6 +37,8 @@ class _AppDetailScreenState extends State<AppDetailScreen> {
           _creditsCount = credits;
           _isLoading = false;
         });
+      } else {
+        setState(() => _isLoading = false);
       }
     });
   }
@@ -93,8 +95,6 @@ class _AppDetailScreenState extends State<AppDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final AppModel app = ModalRoute.of(context)!.settings.arguments as AppModel;
-    
     if (_isLoading) {
       return Scaffold(
         body: Container(
@@ -103,6 +103,25 @@ class _AppDetailScreenState extends State<AppDetailScreen> {
           ),
           child: const Center(
             child: CircularProgressIndicator(color: Colors.white),
+          ),
+        ),
+      );
+    }
+
+    final AppModel? app =
+        ModalRoute.of(context)?.settings.arguments as AppModel?;
+
+    if (app == null) {
+      return Scaffold(
+        body: Container(
+          decoration: const BoxDecoration(
+            gradient: AppConstants.orangeGradient,
+          ),
+          child: const Center(
+            child: Text(
+              'Error: app data not found.',
+              style: TextStyle(color: Colors.white, fontSize: 18),
+            ),
           ),
         ),
       );

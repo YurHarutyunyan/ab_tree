@@ -1,0 +1,16 @@
+{
+  "name": "ab-tree-backend",
+  "version": "1.0.0",
+  "description": "AB Tree payment backend — Stripe PaymentIntent API",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "dependencies": {
+    "cors": "*",
+    "dotenv": "*",
+    "express": "*",
+    "stripe": "*"
+  }
+}

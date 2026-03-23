@@ -43,24 +43,23 @@ class PaymentService {
     return 'TXN$timestamp$randomPart';
   }
 
-  // Validate card number (basic Luhn algorithm)
+  // Validate card number (Luhn algorithm)
   bool validateCardNumber(String cardNumber) {
-    // final cleaned = cardNumber.replaceAll(RegExp(r'\s+'), '');
-    // if (cleaned.length < 13 || cleaned.length > 19) return false;
+    final cleaned = cardNumber.replaceAll(RegExp(r'\s+'), '');
+    if (cleaned.length < 13 || cleaned.length > 19) return false;
 
-    // int sum = 0;
-    // bool alternate = false;
-    // for (int i = cleaned.length - 1; i >= 0; i--) {
-    //   int digit = int.parse(cleaned[i]);
-    //   if (alternate) {
-    //     digit *= 2;
-    //     if (digit > 9) digit -= 9;
-    //   }
-    //   sum += digit;
-    //   alternate = !alternate;
-    // }
-    // return sum % 10 == 0;
-    return true;
+    int sum = 0;
+    bool alternate = false;
+    for (int i = cleaned.length - 1; i >= 0; i--) {
+      int digit = int.parse(cleaned[i]);
+      if (alternate) {
+        digit *= 2;
+        if (digit > 9) digit -= 9;
+      }
+      sum += digit;
+      alternate = !alternate;
+    }
+    return sum % 10 == 0;
   }
 
   // Validate expiry date
@@ -76,8 +75,10 @@ class PaymentService {
       if (month < 1 || month > 12) return false;
 
       final now = DateTime.now();
-      final expiryDate = DateTime(year, month);
-      return expiryDate.isAfter(now);
+      // A card is valid through the end of its expiry month, so compare
+      // against the first day of the month AFTER expiry.
+      final expiryEnd = DateTime(year, month + 1);
+      return expiryEnd.isAfter(now);
     } catch (e) {
       return false;
     }
@@ -133,9 +134,10 @@ class PaymentService {
       final transactionId = _generateTransactionId();
 
       // Get last 4 digits of card
-      final cardLast4 = cardNumber.replaceAll(RegExp(r'\s+'), '').substring(
-            cardNumber.replaceAll(RegExp(r'\s+'), '').length - 4,
-          );
+      final cleanedCard = cardNumber.replaceAll(RegExp(r'\s+'), '');
+      final cardLast4 = cleanedCard.length >= 4
+          ? cleanedCard.substring(cleanedCard.length - 4)
+          : cleanedCard;
 
       // Create payment record
       final payment = PaymentModel(

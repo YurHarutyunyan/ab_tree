@@ -130,7 +130,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       const SizedBox(height: 8),
 
                       const Text(
-                        'Join Sunrise and get started in minutes.',
+                        'Join AB Tree and get started in minutes.',
                         style: TextStyle(
                           fontSize: 16,
                           color: AppConstants.brownText,

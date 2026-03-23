@@ -43,6 +43,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
   @override
   void dispose() {
+    _amountController.removeListener(_updateDisplayAmount);
     _amountController.dispose();
     _cardNumberController.dispose();
     _cardHolderController.dispose();
@@ -105,7 +106,9 @@ class _PaymentScreenState extends State<PaymentScreen> {
       if (username.isNotEmpty) {
         await _mongoService.setCreditsAfterPayment(username);
       }
-      
+
+      if (!mounted) return;
+
       _showSuccessDialog(
         result['transactionId'],
         result['amount'].toStringAsFixed(2),

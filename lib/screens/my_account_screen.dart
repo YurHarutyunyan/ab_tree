@@ -46,8 +46,8 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
     
     setState(() {
       _username = userInfo['username'] ?? '';
-      _firstName = userInfo['firstName'] ?? '';
-      _lastName = userInfo['lastName'] ?? '';
+      _firstName = user?.firstName ?? '';
+      _lastName = user?.lastName ?? '';
       _emailController.text = user?.email ?? '';
       _phoneController.text = user?.phone ?? '';
     });

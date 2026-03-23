@@ -165,10 +165,14 @@ class MongoDBService {
   Future<bool> updateUserProfile(String username, {String? email, String? phone}) async {
     try {
       if (_usersCollection != null) {
-        final updates = modify;
-        if (email != null) updates.set('email', email);
-        if (phone != null) updates.set('phone', phone);
-        
+        // Nothing to update
+        if (email == null && phone == null) return true;
+
+        // Build the modifier by chaining; each .set() returns the same builder
+        ModifierBuilder updates = modify;
+        if (email != null) updates = updates.set('email', email);
+        if (phone != null) updates = updates.set('phone', phone);
+
         final result = await _usersCollection!.updateOne(
           where.eq('username', username),
           updates,

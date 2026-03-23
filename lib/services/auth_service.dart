@@ -105,23 +105,21 @@ class AuthService {
         appCredits: initialCredits,
       );
 
-      // Save to MongoDB or demo storage
+      // Try to save to MongoDB; fall back to in-memory demo storage
       final userId = await _mongoService.createUser(newUser);
       if (userId != null) {
+        // MongoDB succeeded — do not duplicate into the in-memory store
         final userWithId = newUser.copyWith(id: userId);
-        _demoUsers[username] = userWithId;
-        
         return {
           'success': true,
           'message': 'Registration successful',
           'user': userWithId,
         };
       } else {
-        // Save to demo storage
+        // MongoDB unavailable — use in-memory fallback
         final demoId = DateTime.now().millisecondsSinceEpoch.toString();
         final userWithId = newUser.copyWith(id: demoId);
         _demoUsers[username] = userWithId;
-        
         return {
           'success': true,
           'message': 'Registration successful',
